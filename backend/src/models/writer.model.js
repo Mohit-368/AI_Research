@@ -2,50 +2,20 @@ import mongoose from 'mongoose';
 
 const writerSchema = new mongoose.Schema(
     {
+        // One Writer document stores the final Markdown report generated for one Message.
         message: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Message',
             required: true,
             unique: true,
-            index: true,
         },
 
         output: {
             type: String,
             required: true,
+            maxlength: 200000,
         },
 
-        model: {
-            type: String,
-            trim: true,
-        },
-
-        provider: {
-            type: String,
-            trim: true,
-        },
-
-        processingTimeMs: {
-            type: Number,
-            min: 0,
-        },
-
-        tokenUsage: {
-            input: {
-                type: Number,
-                min: 0,
-            },
-
-            output: {
-                type: Number,
-                min: 0,
-            },
-
-            total: {
-                type: Number,
-                min: 0,
-            },
-        },
     },
     {
         timestamps: true,

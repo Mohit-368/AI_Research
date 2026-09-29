@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
 	{
+		// One User document is created per account; research jobs reference this _id.
 		name: {
 			type: String,
 			required: [true, 'Name is required'],
@@ -26,7 +27,6 @@ const userSchema = new mongoose.Schema(
 	},
 	{ timestamps: true },
 );
-
 userSchema.pre('save', async function hashPassword() {
 	if (!this.isModified('password')) {
 		return;
