@@ -16,24 +16,14 @@ const messageSchema = new mongoose.Schema(
             maxlength: 1000,
         },
 
-        status: {
-            type: String,
-            enum: [
-                'pending',
-                'searching',
-                'scraping',
-                'writing',
-                'critiquing',
-                'completed',
-                'failed',
-            ],
-            default: 'pending',
-        },
-
         error: {
             type: String,
             trim: true,
             maxlength: 2000,
+        },
+        output: {
+            type: String,
+            maxlength: 200000,
         },
     },
     {

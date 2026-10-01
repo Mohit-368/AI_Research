@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import { TavilySearch } from "@langchain/tavily";
-import Source from '../models/source.model'; 
+import scrapePage  from './cheerio.service.js';
+import Source from '../models/source.model.js';
 
 const tavily = new TavilySearch({
   maxResults: 5,
@@ -9,46 +10,28 @@ const tavily = new TavilySearch({
 });
 
 export async function searchWeb(query) {
-  const result = await tavily.invoke({
+  const {results} = await tavily.invoke({
     query,
   });
-  return result;
+  return results;
+}
+
+export async function processResults(results) {
+    return await Promise.all(
+        results.map(async (result) => {
+            return {
+                ...result,
+                snippet: result.content,
+                content: await scrapePage(result.url)
+            };
+        })
+    );
 }
 
 
-export async function searchAndSaveSources(query, messageId) {
-    try {
-        console.log(`Executing Tavily search for: "${query}"...`);
-        const searchResult = await searchWeb(query);
+const a= await searchWeb("how ai impact job market");
+const b= await processResults(a);
+console.log(b);
 
-        if (!searchResult || !searchResult.results || searchResult.results.length === 0) {
-            console.log('No results found from Tavily.');
-            return;
-        }
-        const operations = searchResult.results.map((item) => ({
-            updateOne: {
-                filter: { message: messageId, url: item.url },
-                update: {
-                    $set: {
-                        message: messageId,
-                        title: item.title || '',
-                        url: item.url,
-                        snippet: item.content ? item.content.substring(0, 2000) : '',
-                        content: item.content || '',
-                    },
-                },
-                upsert: true, 
-            },
-        }));
-        const dbResult = await Source.bulkWrite(operations);
-        console.log(`Successfully stored sources! Upserted: ${dbResult.upsertedCount}, Modified: ${dbResult.modifiedCount}`);
-        
-        return searchResult;
-
-    } catch (error) {
-        console.error('Error in search and save process:', error);
-        throw error;
-    }
-}
 
 
