@@ -49,3 +49,68 @@ ${sources}
 
     return output;
 }
+
+
+
+
+import { z } from "zod";
+
+const criticSchema = z.object({
+    score: z.number().int().min(0).max(10),
+    strengths: z.array(z.string()),
+    weaknesses: z.array(z.string()),
+    missingInformation: z.array(z.string()),
+    suggestions: z.array(z.string()),
+    feedback: z.string()
+});
+
+export async function criticAgent(results) {
+
+    const sources = results.map((result, index) => {
+        const { content, ...sourceWithoutContent } = result;
+
+        return {
+            source: index + 1,
+            ...sourceWithoutContent
+        };
+    });
+
+    const prompt = `
+You are a critical research reviewer.
+
+Evaluate the quality of the provided research sources.
+
+Review the sources based on:
+
+1. Accuracy
+2. Completeness
+3. Organization
+4. Clarity
+5. Evidence usage
+6. Objectivity
+7. Source quality
+8. Relevance to the research topic
+
+Do not invent information.
+
+Important rules:
+- score must be an integer from 0 to 10.
+- strengths should contain specific strengths found in the sources.
+- weaknesses should contain specific weaknesses found in the sources.
+- missingInformation should contain important information that is absent.
+- suggestions should contain actionable improvements.
+- feedback should be a concise overall assessment.
+
+Research sources:
+
+${JSON.stringify(sources, null, 2)}
+`;
+
+    const structuredModel = model.withStructuredOutput(criticSchema);
+
+    const response = await structuredModel.invoke(prompt);
+
+    return response;
+}
+
+
