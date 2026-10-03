@@ -1,8 +1,7 @@
 import 'dotenv/config';
-import mongoose from 'mongoose';
 import { TavilySearch } from "@langchain/tavily";
 import scrapePage  from './cheerio.service.js';
-import Source from '../models/source.model.js';
+
 
 const tavily = new TavilySearch({
   maxResults: 5,
