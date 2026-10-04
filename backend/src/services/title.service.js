@@ -7,7 +7,7 @@ const gemini = new ChatGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_API_KEY,
 });
 
-async function createTitle(query) {
+export default async function createTitle(query) {
     const response = await gemini.invoke(
         [
             {
@@ -25,6 +25,3 @@ ${query}`,
     return response.content;
 }
 
-const title = await createTitle("how ai impact job market");
-
-console.log(title);

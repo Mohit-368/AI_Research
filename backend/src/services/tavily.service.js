@@ -28,9 +28,7 @@ export async function processResults(results) {
 }
 
 
-const a= await searchWeb("how ai impact job market");
-const b= await processResults(a);
-console.log(b);
+
 
 
 

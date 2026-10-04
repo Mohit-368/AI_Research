@@ -1,5 +1,5 @@
 import { StateGraph, Annotation, START, END } from "@langchain/langgraph";
-import {criticAgent , summerizeResults} from "./gemini.service.js";
+import {criticAgent , summarizeResults} from "./gemini.service.js";
 import createTitle from "./title.service.js";
 import {searchWeb, processResults} from "./tavily.service.js";
 
@@ -60,41 +60,61 @@ export const ResearchState = Annotation.Root({
 
 async function titleAgent(state) {
   const title = await createTitle(state.query);
-  state.title = title;
-  return state;
+
+  return {
+    title
+  };
 }
 
 async function sourceAgent(state) {
   const results = await searchWeb(state.query);
   const processedResults = await processResults(results);
-  state.source = processedResults;
-  return state;
+
+  return {
+    source: processedResults
+  };
 }
 
 async function criticAgentWrapper(state) {
   const critique = await criticAgent(state.source);
-  state.score = critique.score;
-  state.strengths = critique.strengths;
-  state.weaknesses = critique.weaknesses;
-  state.missingInformation = critique.missingInformation;
-  state.suggestions = critique.suggestions;
-  state.feedback = critique.feedback;
-  return state;
+
+  return {
+    score: critique.score,
+    strengths: critique.strengths,
+    weaknesses: critique.weaknesses,
+    missingInformation: critique.missingInformation,
+    suggestions: critique.suggestions,
+    feedback: critique.feedback
+  };
 }
 
-async function summerizeResultsAgent(state) {
-  const summary = await summerizeResults(state.source);
-  state.writer_output = summary;
-  return state;
+async function summarizeResultsAgent(state) {
+  const summary = await summarizeResults(state.source);
+
+  return {
+    writer_output: summary
+  };
 }
 
-const researchGraph = new StateGraph({ResearchState});
-researchGraph.addEdge(START, titleAgent);
-researchGraph.addEdge(titleAgent, sourceAgent);
-researchGraph.addEdge(sourceAgent, criticAgentWrapper);
-researchGraph.addEdge(criticAgentWrapper, summerizeResultsAgent);
-researchGraph.addEdge(summerizeResultsAgent, END);
+const researchGraph = new StateGraph(ResearchState);
+researchGraph
+    .addNode("titleAgent", titleAgent)
+    .addNode("sourceAgent", sourceAgent)
+    .addNode("criticAgent", criticAgentWrapper)
+    .addNode("summarizeResultsAgent", summarizeResultsAgent);
 
-export default graph=researchGraph.compile();
+researchGraph.addEdge(START, "titleAgent");
+researchGraph.addEdge("titleAgent", "sourceAgent");
+researchGraph.addEdge("sourceAgent", "criticAgent");
+researchGraph.addEdge("criticAgent", "summarizeResultsAgent");
+researchGraph.addEdge("summarizeResultsAgent", END);
+
+const graph = researchGraph.compile();
+
+const result = await graph.invoke({
+  query: "India deal with Russia for Su-57"
+});
+
+console.log(result);
 
 
