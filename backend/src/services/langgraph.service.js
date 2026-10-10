@@ -1,120 +1,51 @@
-import { StateGraph, Annotation, START, END } from "@langchain/langgraph";
-import {criticAgent , summarizeResults} from "./gemini.service.js";
-import createTitle from "./title.service.js";
-import {searchWeb, processResults} from "./tavily.service.js";
+import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
+import { criticAgent, summarizeResults } from './gemini.service.js';
+import createTitle from './title.service.js';
+import { processResults, searchWeb } from './tavily.service.js';
 
-
-export const ResearchState = Annotation.Root({
-  query: Annotation({
-    default: () => "",
-    reducer: (_, next) => next,
-  }),
-
-  title: Annotation({
-    default: () => "",
-    reducer: (_, next) => next,
-  }),
-
-  writer_output: Annotation({
-    default: () => "",
-    reducer: (_, next) => next,
-  }),
-
-  source: Annotation({
-    default: () => [],
-    reducer: (_, next) => next,
-  }),
-
-  score: Annotation({
-    default: () => 0,
-    reducer: (_, next) => next,
-  }),
-
-  strengths: Annotation({
-    default: () => [],
-    reducer: (_, next) => next,
-  }),
-
-  weaknesses: Annotation({
-    default: () => [],
-    reducer: (_, next) => next,
-  }),
-
-  missingInformation: Annotation({
-    default: () => [],
-    reducer: (_, next) => next,
-  }),
-
-  suggestions: Annotation({
-    default: () => [],
-    reducer: (_, next) => next,
-  }),
-
-  feedback: Annotation({
-    default: () => "",
-    reducer: (_, next) => next,
-  }),
+const ResearchState = Annotation.Root({
+  query: Annotation({ reducer: (_, next) => next, default: () => '' }),
+  title: Annotation({ reducer: (_, next) => next, default: () => '' }),
+  writer_output: Annotation({ reducer: (_, next) => next, default: () => '' }),
+  source: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  score: Annotation({ reducer: (_, next) => next, default: () => 0 }),
+  strengths: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  weaknesses: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  missingInformation: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  suggestions: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  feedback: Annotation({ reducer: (_, next) => next, default: () => '' }),
 });
 
-
-
-async function titleAgent(state) {
-  const title = await createTitle(state.query);
-
-  return {
-    title
-  };
-}
-
 async function sourceAgent(state) {
-  const results = await searchWeb(state.query);
-  const processedResults = await processResults(results);
-
-  return {
-    source: processedResults
-  };
+  const searchResults = await searchWeb(state.query);
+  const source = await processResults(searchResults);
+  if (!source.length) throw new Error('Search returned no sources');
+  return { source };
 }
-
-async function criticAgentWrapper(state) {
-  const critique = await criticAgent(state.source);
-
+async function titleAgent(state) { return { title: await createTitle(state.query) }; }
+async function critiqueAndSummary(state) {
+  const [critique, summary] = await Promise.all([
+    criticAgent(state.source),
+    summarizeResults(state.source, state.query),
+  ]);
   return {
     score: critique.score,
     strengths: critique.strengths,
     weaknesses: critique.weaknesses,
     missingInformation: critique.missingInformation,
     suggestions: critique.suggestions,
-    feedback: critique.feedback
+    feedback: critique.feedback,
+    writer_output: summary,
   };
 }
 
-async function summarizeResultsAgent(state) {
-  const summary = await summarizeResults(state.source);
+const builder = new StateGraph(ResearchState)
+  .addNode('sourceAgent', sourceAgent)
+  .addNode('titleAgent', titleAgent)
+  .addNode('analysisAgent', critiqueAndSummary)
+  .addEdge(START, 'sourceAgent')
+  .addEdge('sourceAgent', 'titleAgent')
+  .addEdge('titleAgent', 'analysisAgent')
+  .addEdge('analysisAgent', END);
 
-  return {
-    writer_output: summary
-  };
-}
-
-const researchGraph = new StateGraph(ResearchState);
-researchGraph
-    .addNode("titleAgent", titleAgent)
-    .addNode("sourceAgent", sourceAgent)
-    .addNode("criticAgent", criticAgentWrapper)
-    .addNode("summarizeResultsAgent", summarizeResultsAgent);
-
-researchGraph.addEdge(START, "titleAgent");
-researchGraph.addEdge("titleAgent", "sourceAgent");
-researchGraph.addEdge("sourceAgent", "criticAgent");
-researchGraph.addEdge("criticAgent", "summarizeResultsAgent");
-researchGraph.addEdge("summarizeResultsAgent", END);
-
-const graph = researchGraph.compile();
-
-const result = await graph.invoke({
-  query: "India deal with Russia for Su-57"
-});
-
-console.log(result);
-
-
+export const researchGraph = builder.compile();

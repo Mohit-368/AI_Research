@@ -1,39 +1,13 @@
 import mongoose from 'mongoose';
 
-const messageSchema = new mongoose.Schema(
-    {
-        // A Message is one research request/job. Sources, report, and critique reference this _id.
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-        },
+const messageSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  prompt: { type: String, required: true, trim: true, maxlength: 1000 },
+  title: { type: String, trim: true, maxlength: 300 },
+  status: { type: String, enum: ['queued', 'in_progress', 'completed', 'failed'], default: 'in_progress', index: true },
+  error: { type: String, trim: true, maxlength: 500 },
+  output: { type: String, maxlength: 20000 },
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
-        prompt: {
-            type: String,
-            required: true,
-            trim: true,
-            maxlength: 1000,
-        },
-
-        error: {
-            type: String,
-            trim: true,
-            maxlength: 2000,
-        },
-        output: {
-            type: String,
-            maxlength: 200000,
-        },
-    },
-    {
-        timestamps: true,
-    }
-);
-
-// User history is queried newest-first without duplicating the user's name on every job.
 messageSchema.index({ user: 1, createdAt: -1 });
-
-const Message = mongoose.model('Message', messageSchema);
-
-export default Message;
+export default mongoose.model('Message', messageSchema);

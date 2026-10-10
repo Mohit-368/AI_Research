@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const AboutSimplified = () => {
   return (
@@ -12,10 +12,7 @@ const AboutSimplified = () => {
         
         {/* Header Section */}
         <div className="flex flex-col items-center text-center mb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/80 border border-zinc-800 backdrop-blur-sm text-xs font-bold text-zinc-400 uppercase tracking-[0.1em] mb-8 shadow-lg">
-            <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-            How It Works
-          </div>
+          
           
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-6">
             Stop searching. <br />

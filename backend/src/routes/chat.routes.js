@@ -1,13 +1,19 @@
 import express from 'express';
+import {
+  addFeedbackToResearch,
+  createResearch,
+  getResearchById,
+  getUsersAllResearch,
+} from '../controllers/research.controller.js';
+import protect from '../middlewares/auth.middleware.js';
+import validate from '../middlewares/validate.middleware.js';
+import rateLimit from '../middlewares/rate-limit.middleware.js';
+import { feedbackSchema, researchSchema } from '../schemas/request.schemas.js';
 
-import { createResearch,getResearchById,getUsersAllResearch,addFeedbackToResearch} from '../controllers/research.controller';
-import protect from '../middleware/auth.middleware';
-const Chatrouter = express.Router();
-
-Chatrouter.post('/chat',protect, createResearch);
-Chatrouter.get('/chat',protect, getUsersAllResearch);
-Chatrouter.get('/chat/:id',protect, getResearchById);
-Chatrouter.post('/chat/feedback/:id',protect, addFeedbackToResearch);
-
-
-export default Chatrouter;
+const router = express.Router();
+router.use(protect);
+router.post('/chat', rateLimit({ windowMs: 60_000, max: 5 }), validate(researchSchema), createResearch);
+router.get('/chat', getUsersAllResearch);
+router.get('/chat/:id', getResearchById);
+router.post('/chat/feedback/:id', validate(feedbackSchema), addFeedbackToResearch);
+export default router;

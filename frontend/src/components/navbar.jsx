@@ -1,51 +1,290 @@
-import React from 'react';
+'use client';
 
-const Navbar = () => {
+import { useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+
+const defaultItems = [
+  {
+    label: 'Home',
+    bgColor: '#1B1722',
+    textColor: '#fff',
+    
+  },
+  {
+    label: 'About',
+    bgColor: '#2F293A',
+    textColor: '#fff',
+    links: [
+      { label: 'How to Use', href: '#featured', ariaLabel: 'How to Use' },
+    ]
+  },
+  {
+    label: 'Contact',
+    bgColor: '#2F293A',
+    textColor: '#fff',
+    links: [
+      { label: 'Email', href: 'mailto:hello@example.com', ariaLabel: 'Email us' },
+      { label: 'Twitter', href: 'https://twitter.com', ariaLabel: 'Twitter' },
+      { label: 'LinkedIn', href: 'https://linkedin.com', ariaLabel: 'LinkedIn' }
+    ]
+  }
+];
+
+const ArrowUpRightIcon = ({ className = '' }) => (
+  <svg
+    className={className}
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      fillRule="evenodd"
+      d="M4.5 3.75A.75.75 0 0 1 5.25 3h7a.75.75 0 0 1 .75.75v7a.75.75 0 0 1-1.5 0V5.56L4.28 12.78a.75.75 0 0 1-1.06-1.06L10.44 4.5H5.25a.75.75 0 0 1-.75-.75Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+const Navbar = ({
+  logo,
+  logoAlt = 'Company Logo',
+  items = defaultItems,
+  className = '',
+  ease = 'power3.out',
+  baseColor = '#ffffff',
+  menuColor = '#000000',
+  buttonBgColor = '#111111',
+  buttonTextColor = '#ffffff',
+  ctaText = 'Get Started',
+  onCtaClick
+}) => {
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const navRef = useRef(null);
+  const cardsRef = useRef([]);
+  const tlRef = useRef(null);
+
+  const calculateHeight = () => {
+    const navEl = navRef.current;
+    if (!navEl) return 260;
+
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobile) {
+      const contentEl = navEl.querySelector('.card-nav-content');
+      if (contentEl) {
+        const wasVisible = contentEl.style.visibility;
+        const wasPointerEvents = contentEl.style.pointerEvents;
+        const wasPosition = contentEl.style.position;
+        const wasHeight = contentEl.style.height;
+
+        contentEl.style.visibility = 'visible';
+        contentEl.style.pointerEvents = 'auto';
+        contentEl.style.position = 'static';
+        contentEl.style.height = 'auto';
+
+        // Trigger reflow to get accurate scrollHeight
+        void contentEl.offsetHeight;
+
+        const topBar = 60;
+        const padding = 16;
+        const contentHeight = contentEl.scrollHeight;
+
+        contentEl.style.visibility = wasVisible;
+        contentEl.style.pointerEvents = wasPointerEvents;
+        contentEl.style.position = wasPosition;
+        contentEl.style.height = wasHeight;
+
+        return topBar + contentHeight + padding;
+      }
+    }
+    return 260;
+  };
+
+  const createTimeline = () => {
+    const navEl = navRef.current;
+    if (!navEl) return null;
+
+    gsap.set(navEl, { height: 60, overflow: 'hidden' });
+    gsap.set(cardsRef.current, { y: 50, opacity: 0 });
+
+    const tl = gsap.timeline({ paused: true });
+
+    tl.to(navEl, {
+      height: calculateHeight,
+      duration: 0.4,
+      ease
+    });
+
+    tl.to(
+      cardsRef.current,
+      { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 },
+      '-=0.1'
+    );
+
+    return tl;
+  };
+
+  useLayoutEffect(() => {
+    const tl = createTimeline();
+    tlRef.current = tl;
+
+    return () => {
+      tl?.kill();
+      tlRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ease, items]);
+
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      if (!tlRef.current) return;
+
+      if (isExpanded) {
+        const newHeight = calculateHeight();
+        gsap.set(navRef.current, { height: newHeight });
+
+        tlRef.current.kill();
+        const newTl = createTimeline();
+        if (newTl) {
+          newTl.progress(1);
+          tlRef.current = newTl;
+        }
+      } else {
+        tlRef.current.kill();
+        const newTl = createTimeline();
+        if (newTl) {
+          tlRef.current = newTl;
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExpanded]);
+
+  const toggleMenu = () => {
+    const tl = tlRef.current;
+    if (!tl) return;
+    if (!isExpanded) {
+      setIsHamburgerOpen(true);
+      setIsExpanded(true);
+      tl.play(0);
+    } else {
+      setIsHamburgerOpen(false);
+      tl.eventCallback('onReverseComplete', () => setIsExpanded(false));
+      tl.reverse();
+    }
+  };
+
+  const setCardRef = (i) => (el) => {
+    if (el) cardsRef.current[i] = el;
+  };
+
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl font-sans">
-      {/* Floating Wrapper */}
-      
-      <nav className="flex items-center justify-between bg-zinc-900/40 backdrop-blur-2xl border border-zinc-700/50 rounded-full px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-        
-        {/* Logo / Brand */}
-        <div className="flex items-center gap-2 pl-2 cursor-pointer group">
-          <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 group-hover:border-indigo-500 transition-colors">
-            {/* Animated dot */}
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 animate-pulse" />
+    <div
+      className={`card-nav-container fixed left-1/2 -translate-x-1/2 w-[90%] max-w-[800px] z-[99] top-[1.2em] md:top-[2em] ${className}`}
+    >
+      <nav
+        ref={navRef}
+        className={`card-nav ${
+          isExpanded ? 'open' : ''
+        } block h-[60px] p-0 rounded-xl shadow-md relative overflow-hidden will-change-[height]`}
+        style={{ backgroundColor: baseColor }}
+      >
+        {/* Top Bar */}
+        <div className="card-nav-top absolute inset-x-0 top-0 h-[60px] flex items-center justify-between p-2 pl-[1.1rem] z-[2]">
+          {/* Hamburger Menu Trigger */}
+          <div
+            className={`hamburger-menu ${
+              isHamburgerOpen ? 'open' : ''
+            } group h-full flex flex-col items-center justify-center cursor-pointer gap-[6px] order-2 md:order-none px-2`}
+            onClick={toggleMenu}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleMenu();
+              }
+            }}
+            role="button"
+            aria-label={isExpanded ? 'Close menu' : 'Open menu'}
+            aria-expanded={isExpanded}
+            tabIndex={0}
+            style={{ color: menuColor }}
+          >
+            <div
+              className={`hamburger-line w-[30px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-linear [transform-origin:50%_50%] ${
+                isHamburgerOpen ? 'translate-y-[4px] rotate-45' : ''
+              } group-hover:opacity-75`}
+            />
+            <div
+              className={`hamburger-line w-[30px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-linear [transform-origin:50%_50%] ${
+                isHamburgerOpen ? '-translate-y-[4px] -rotate-45' : ''
+              } group-hover:opacity-75`}
+            />
           </div>
-          <span className="font-bold text-white tracking-tight hidden sm:block">Agentic</span>
-        </div>
 
-        {/* Core Links */}
-        <div className="flex items-center gap-1 sm:gap-6 bg-zinc-950/50 rounded-full px-6 py-1.5 border border-zinc-800/50">
-          <a href="#home" className="text-sm font-medium text-white px-3 py-1.5 bg-zinc-800/80 rounded-full transition-colors">
-            Home
-          </a>
-          <a href="#about" className="text-sm font-medium text-zinc-400 hover:text-white px-3 py-1.5 transition-colors">
-            About
-          </a>
-          <a href="#how-to-use" className="text-sm font-medium text-zinc-400 hover:text-white px-3 py-1.5 transition-colors">
-            How to Use
-          </a>
-        </div>
+          {/* Center Logo */}
+          <div className="logo-container flex items-center md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 order-1 md:order-none">
+            {logo ? (
+              <img src={logo} alt={logoAlt} className="logo h-[28px] w-auto" />
+            ) : (
+              <span className="font-bold text-lg tracking-tight text-black">
+                AI_Research
+              </span>
+            )}
+          </div>
 
-        {/* Login Action */}
-        <div className="pr-1">
-          <button className="relative group overflow-hidden rounded-full p-[1px]">
-            {/* Hover Gradient Border Effect */}
-            <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-full opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
-            
-            <div className="relative flex items-center gap-2 bg-zinc-950 px-5 py-2 rounded-full transition-all group-hover:bg-zinc-900/80">
-              <span className="text-sm font-semibold text-white">Login</span>
-              <svg className="w-4 h-4 text-fuchsia-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </div>
+          {/* Right CTA Button */}
+          <button
+            type="button"
+            onClick={onCtaClick}
+            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 items-center h-full font-medium cursor-pointer transition-opacity duration-300 hover:opacity-90"
+            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+          >
+            {ctaText}
           </button>
         </div>
-        
+
+        {/* Expandable Cards Content */}
+        <div
+          className={`card-nav-content absolute left-0 right-0 top-[60px] bottom-0 p-2 flex flex-col items-stretch gap-2 justify-start z-[1] ${
+            isExpanded
+              ? 'visible pointer-events-auto'
+              : 'invisible pointer-events-none'
+          } md:flex-row md:items-end md:gap-[12px]`}
+          aria-hidden={!isExpanded}
+        >
+          {(items || []).slice(0, 3).map((item, idx) => (
+            <div
+              key={`${item.label}-${idx}`}
+              className="nav-card select-none relative flex flex-col gap-2 p-[12px_16px] rounded-[calc(0.75rem-0.2rem)] min-w-0 flex-[1_1_auto] h-auto min-h-[60px] md:h-full md:min-h-0 md:flex-[1_1_0%]"
+              ref={setCardRef(idx)}
+              style={{ backgroundColor: item.bgColor, color: item.textColor }}
+            >
+              <div className="nav-card-label font-normal tracking-[-0.5px] text-[18px] md:text-[22px]">
+                {item.label}
+              </div>
+              <div className="nav-card-links mt-auto flex flex-col gap-[2px]">
+                {item.links?.map((lnk, i) => (
+                  <a
+                    key={`${lnk.label}-${i}`}
+                    className="nav-card-link inline-flex items-center gap-[6px] no-underline cursor-pointer transition-opacity duration-300 hover:opacity-75 text-[15px] md:text-[16px]"
+                    href={lnk.href || '#'}
+                    aria-label={lnk.ariaLabel || lnk.label}
+                  >
+                    <ArrowUpRightIcon className="nav-card-link-icon shrink-0" />
+                    {lnk.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </nav>
-      
     </div>
   );
 };
