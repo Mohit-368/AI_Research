@@ -4,7 +4,7 @@ An Express 5 and MongoDB API for authenticated AI-assisted web research. It sear
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 20.19+ or 22.12+ (required by the current Vite toolchain)
 - MongoDB
 - Google AI API key
 - Tavily API key

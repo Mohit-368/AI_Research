@@ -43,9 +43,10 @@ const builder = new StateGraph(ResearchState)
   .addNode('sourceAgent', sourceAgent)
   .addNode('titleAgent', titleAgent)
   .addNode('analysisAgent', critiqueAndSummary)
+  // Source discovery and title generation are independent, so run them in parallel.
   .addEdge(START, 'sourceAgent')
-  .addEdge('sourceAgent', 'titleAgent')
-  .addEdge('titleAgent', 'analysisAgent')
+  .addEdge(START, 'titleAgent')
+  .addEdge(['sourceAgent', 'titleAgent'], 'analysisAgent')
   .addEdge('analysisAgent', END);
 
 export const researchGraph = builder.compile();

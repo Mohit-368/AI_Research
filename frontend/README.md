@@ -1,19 +1,24 @@
-# React + Vite
+# ResearchOS Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite web client for the ResearchOS backend. The client uses the backend's HTTP-only cookie session and sends credentialed requests to `VITE_API_URL`.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-## React Compiler
+By default, the app calls `http://localhost:5000`. Adjust `VITE_API_URL` in `.env.local` if the backend is hosted elsewhere. Do not place Google or Tavily API keys in frontend environment variables.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Available routes
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+- `/`: overview and starter research prompts
+- `/about`: research workflow explanation
+- `/login`: sign in
+- `/register`: create an account
+- `/app`: start a one-topic research session
+- `/research/:id`: view a saved report, sources, critique, and feedback
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The frontend build uses Vite's SPA fallback. Rewrite unknown frontend paths to `/index.html` when deploying. `vercel.json` and `public/_redirects` are included as examples.

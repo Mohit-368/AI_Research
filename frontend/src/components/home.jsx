@@ -1,121 +1,49 @@
-import React from 'react';
+import { useState } from 'react';
 
-const ModernHomePage = () => {
+const examples = [
+  { icon: '◈', tag: 'TECHNOLOGY', title: 'How will AI agents change software engineering?', query: 'How will AI agents change software engineering over the next five years? Compare current evidence, limitations, and adoption trends.' },
+  { icon: '⌁', tag: 'CLIMATE', title: 'Can next-generation batteries scale?', query: 'What are the most promising next-generation battery technologies, and what evidence exists about their scalability, costs, and limitations?' },
+  { icon: '◎', tag: 'SCIENCE', title: 'What is the state of fusion energy?', query: 'Assess the current state of fusion energy research, recent milestones, technical bottlenecks, and realistic commercialization timelines.' },
+];
+
+export default function Home({ navigate }) {
+  const [query, setQuery] = useState('');
+  const start = (value = query) => {
+    const trimmed = value.trim();
+    navigate(trimmed ? `/app?q=${encodeURIComponent(trimmed)}` : '/app');
+  };
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-indigo-500/30 relative overflow-hidden">
-      
-      {/* Background Ambient Glow */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-900/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-fuchsia-900/10 blur-[100px] pointer-events-none" />
-
-      {/* Hero Section */}
-      <main className="relative z-10 flex flex-col items-center justify-center px-6 py-24 md:py-32 mx-auto max-w-5xl text-center min-h-[70vh]">
-        
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm text-xs font-medium text-indigo-300 mb-8">
-          <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-          Tavily & Gemini Integrated
+    <main className="landing-page">
+      <section className="hero container">
+        <div className="hero-copy">
+          <div className="status-pill"><span className="status-dot" /> RESEARCH, RECONSIDERED <span className="pill-divider" /> WEB + AI</div>
+          <h1>From scattered sources<br />to <span className="gradient-text">clear thinking.</span></h1>
+          <p className="hero-lede">An AI research workspace that searches the web, reads relevant sources, synthesizes the evidence, and shows you where the conclusions come from.</p>
+          <form className="research-prompt" onSubmit={(event) => { event.preventDefault(); start(); }}>
+            <div className="prompt-topline"><span className="prompt-icon">⌕</span><span>YOUR RESEARCH QUESTION</span><span className="prompt-hint">ONE TOPIC PER SESSION</span></div>
+            <textarea rows="3" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Explore a question, compare ideas, or investigate a claim…" aria-label="Research question" />
+            <div className="prompt-bottom"><span className="character-count">{query.length}/1000</span><button className="button button-primary" type="submit">Start research <span aria-hidden="true">↗</span></button></div>
+          </form>
+          <div className="hero-proof"><span>⌁</span> Search the web <i /> <span>◈</span> Synthesize evidence <i /> <span>✓</span> Review limitations</div>
         </div>
-
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-8 leading-tight">
-          Supercharge your research with <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400">
-            Autonomous AI Swarms.
-          </span>
-        </h1>
-        
-        <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-12 leading-relaxed">
-          Input a topic and watch a specialized team of agents search, scrape, synthesize, and critique—delivering a comprehensive markdown report in seconds.
-        </p>
-
-        {/* Search/Input Interface */}
-        <div className="w-full max-w-2xl relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
-          <div className="relative flex items-center bg-zinc-900 border border-zinc-800 rounded-2xl p-2 shadow-2xl">
-            <svg className="w-6 h-6 text-zinc-500 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input 
-              type="text" 
-              placeholder="E.g., What are the economic impacts of room-temperature superconductors?" 
-              className="flex-1 bg-transparent border-none outline-none text-zinc-200 placeholder-zinc-600 px-4 py-3 text-base md:text-lg"
-            />
-            <button className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-[0_0_15px_rgba(79,70,229,0.4)]">
-              Deploy Agents
-            </button>
-          </div>
-        </div>
-      </main>
-
-      {/* Architecture / Agent Grid Section */}
-      <section className="relative z-10 px-6 pb-32 max-w-7xl mx-auto" id="pipeline">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-white mb-4">The Multi-Agent Pipeline</h2>
-          <p className="text-zinc-500">Four specialized agents working in perfect parallel harmony.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          {/* Agent 1 */}
-          <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-sm hover:border-indigo-500/30 transition-colors group">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 flex items-center justify-center mb-6 border border-zinc-700/50 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Search Agent</h3>
-            <p className="text-sm text-zinc-400 mb-4">Finds high-quality sources using the Tavily Search API, fetching titles and URLs instantly.</p>
-            <div className="text-xs font-mono text-zinc-500 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800/50">
-              {'<TavilySearch>'}
-            </div>
-          </div>
-
-          {/* Agent 2 */}
-          <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-sm hover:border-indigo-500/30 transition-colors group">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 flex items-center justify-center mb-6 border border-zinc-700/50 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Scraper Agent</h3>
-            <p className="text-sm text-zinc-400 mb-4">Requests and BeautifulSoup strip away noise, capturing only clean, relevant article text.</p>
-            <div className="text-xs font-mono text-zinc-500 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800/50">
-              {'<BS4_Extractor>'}
-            </div>
-          </div>
-
-          {/* Agent 3 */}
-          <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-sm hover:border-indigo-500/30 transition-colors group">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 flex items-center justify-center mb-6 border border-zinc-700/50 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Writer Agent</h3>
-            <p className="text-sm text-zinc-400 mb-4">Gemini via LangChain synthesizes massive context arrays into structured Markdown.</p>
-            <div className="text-xs font-mono text-zinc-500 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800/50">
-              {'<Gemini_Write>'}
-            </div>
-          </div>
-
-          {/* Agent 4 */}
-          <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-sm hover:border-indigo-500/30 transition-colors group">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 flex items-center justify-center mb-6 border border-zinc-700/50 group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Critic Agent</h3>
-            <p className="text-sm text-zinc-400 mb-4">Reviews the draft for logical gaps and hallucinatory errors before finalizing the report.</p>
-            <div className="text-xs font-mono text-zinc-500 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800/50">
-              {'<Gemini_Critique>'}
-            </div>
-          </div>
-
+        <div className="hero-art" aria-label="Illustration of a research synthesis workspace" role="img">
+          <div className="orbit orbit-one" /><div className="orbit orbit-two" />
+          <div className="orb-core"><span className="orb-core-symbol">R</span><span className="orb-core-label">RESEARCH<br />ENGINE</span></div>
+          <div className="float-card card-search"><span className="mini-icon purple">⌕</span><div><strong>Source discovery</strong><small>Finding relevant evidence</small></div><span className="mini-state">LIVE</span></div>
+          <div className="float-card card-synthesis"><span className="mini-icon teal">✳</span><div><strong>Evidence synthesis</strong><small>Cross-source patterns</small></div><div className="signal-bars"><i/><i/><i/><i/><i/></div></div>
+          <div className="float-card card-review"><span className="mini-icon amber">✓</span><div><strong>Quality review</strong><small>Gaps and uncertainty</small></div><span className="review-score">03</span></div>
+          <div className="art-caption"><span className="caption-line" /> A clearer path through complexity</div>
         </div>
       </section>
 
-    </div>
-  );
-};
+      <section className="metrics-strip"><div className="container metrics-inner"><div><strong>01</strong><span>Question-led research</span></div><div><strong>02</strong><span>Sources you can inspect</span></div><div><strong>03</strong><span>Critique alongside synthesis</span></div><div className="metrics-note">Built to help you think, not just generate.</div></div></section>
 
-export default ModernHomePage;
+      <section className="section container examples-section">
+        <div className="section-heading"><div><span className="eyebrow">A FEW PLACES TO START</span><h2>Good questions deserve<br className="desktop-break" /> better research.</h2></div><p>Choose a prompt to start a dedicated research session. Each session focuses on one topic, keeping its findings and sources together.</p></div>
+        <div className="example-grid">{examples.map((item) => <button className="example-card" key={item.tag} onClick={() => start(item.query)}><span className="example-top"><span className="example-icon">{item.icon}</span><span>{item.tag}</span><span className="example-arrow">↗</span></span><strong>{item.title}</strong><span className="example-link">Use this question <span>→</span></span></button>)}</div>
+      </section>
+
+      <section className="closing-cta"><div className="container closing-inner"><div><span className="eyebrow">LESS TAB-HOPPING. MORE THINKING.</span><h2>Make your next deep dive<br /><span className="gradient-text">count.</span></h2></div><button className="button button-light" onClick={() => start()}>Open research workspace <span>↗</span></button></div></section>
+    </main>
+  );
+}

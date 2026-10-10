@@ -12,6 +12,11 @@ export default function rateLimit({ windowMs = 60_000, max = 10 } = {}) {
       buckets.set(key, bucket);
     }
     bucket.count += 1;
+    if (buckets.size > 10_000) {
+      for (const [bucketKey, value] of buckets) {
+        if (now >= value.resetAt) buckets.delete(bucketKey);
+      }
+    }
     response.setHeader('RateLimit-Limit', String(max));
     response.setHeader('RateLimit-Remaining', String(Math.max(0, max - bucket.count)));
     if (bucket.count > max) {
