@@ -10,8 +10,11 @@ const app = express();
 app.disable('x-powered-by');
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://research-os-tawny.vercel.app",
   process.env.CLIENT_URL,
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map((url) => url.replace(/\/$/, ""));
 
 app.use(
   cors({
@@ -20,7 +23,8 @@ app.use(
         return callback(null, true);
       }
 
-      return callback(new Error("Origin not allowed by CORS"));
+      // Reject the origin without throwing a server error.
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
