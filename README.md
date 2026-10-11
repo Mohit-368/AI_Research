@@ -23,8 +23,10 @@ An AI-powered research workspace with authentication, saved history, source insp
 > **Note:** The backend runs on a free-tier host and may take ~30–60 seconds to wake on the first request. Please allow a moment, then refresh.
 
 ## Screenshots
+<img width="1814" height="893" alt="Screenshot from 2026-10-11 12-43-23" src="https://github.com/user-attachments/assets/1958fc46-d48f-47c6-9a67-dc640bac387b" />
+<img width="1728" height="892" alt="Screenshot from 2026-10-11 12-43-40" src="https://github.com/user-attachments/assets/b0ea59c2-ec38-4498-86bf-891b8ab47ecb" />
+<img width="1860" height="887" alt="Screenshot from 2026-10-11 12-45-51" src="https://github.com/user-attachments/assets/c5113fd3-f601-4b67-8cc8-6624cefa9b52" />
 
-<!-- Replace these with real screenshots / a GIF. Store them in /docs/ -->
 <div align="center">
 
 | Research workspace | Report & sources |
